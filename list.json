@@ -2,6 +2,7 @@
   {
     "id": 12345,
     "title": "Crêpes raffinées",
+    "slug": "crepes-raffinees",
     "thumbnail": "https://images.pexels.com/photos/53483/strawberries-crepe-dessert-sweet-53483.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
     "author": "John Deuf",
     "difficulty": "Facile",
@@ -65,6 +66,7 @@
   {
     "id": 8965,
     "title": "Pizza Margherita",
+    "slug": "pizza-margherita",
     "thumbnail": "https://images.pexels.com/photos/263041/pexels-photo-263041.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
     "author": "Silvia Dital",
     "difficulty": "Moyen",
@@ -144,6 +146,7 @@
   {
     "id": 21453,
     "title": "Hamburger Au Paprika",
+    "slug": "hamburger-au-paprika",
     "thumbnail": "https://images.pexels.com/photos/3616956/pexels-photo-3616956.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
     "author": "Howard Burggie",
     "difficulty": "Moyen",
@@ -222,6 +225,7 @@
   {
     "id": 8762,
     "title": "Tagliatelles au poulet braisé",
+    "slug": "tagliatelles-au-poulet-braise",
     "thumbnail": "https://images.pexels.com/photos/2703468/pexels-photo-2703468.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
     "author": "Léo Dalmi",
     "difficulty": "Facile",
@@ -299,6 +303,7 @@
   {
     "id": 462,
     "title": "Velouté de potiron",
+    "slug": "veloute-de-potiron",
     "thumbnail": "https://images.pexels.com/photos/539451/pexels-photo-539451.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
     "author": "Marie Massart",
     "difficulty": "Facile",
@@ -356,6 +361,7 @@
   {
     "id": 11,
     "title": "Fondant au chocolat",
+    "slug": "fondant-au-chocolat",
     "thumbnail": "https://images.pexels.com/photos/132694/pexels-photo-132694.jpeg?auto=compress&cs=tinysrgb&h=650&w=940",
     "author": "Marie Massart",
     "difficulty": "Facile",
