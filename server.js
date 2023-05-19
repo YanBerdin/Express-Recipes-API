@@ -3,7 +3,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const jwt = require('express-jwt');
 const jsonwebtoken = require('jsonwebtoken');
-
+const socket = require('socket.io');   
 // recipes data
 const recipes = require('./list.json');
 
@@ -60,6 +60,16 @@ app.use((req, res, next) => {
     next();
   }
 });
+
+
+// Ajouté 
+// const server = server(app);
+// const io = socket(server, {
+//   cors: {
+//     origin: "*",
+//     methods: ['GET', 'POST', 'OPTIONS', 'PUT', 'DELETE']
+//   }
+// });
 
 // prepare authorization middleware
 const authorizationMiddleware = jwt({ secret: jwtSecret, algorithms: ['HS256'] });
