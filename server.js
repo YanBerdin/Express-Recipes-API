@@ -1,145 +1,292 @@
-// librairies
+// Librairies
 const express = require("express");
-const bodyParser = require("body-parser");
-const jwt = require("express-jwt");
+const cors = require("cors");
 const jsonwebtoken = require("jsonwebtoken");
-// const socket = require('socket.io');
-// Ajouté Moi
-// const Server = require('http').Server;
-// recipes data
+const expressJwt = require("express-jwt");
+const expressJSDocSwagger = require("express-jsdoc-swagger");
+require("dotenv").config(); // Pour gérer les variables d'environnement
+const bcrypt = require("bcrypt");
 
+// Example of hashing a password before storing it
+const hashedPassword1 = bcrypt.hashSync("monSuperPasswordSécurisé", 10);
+const hashedPassword2 = bcrypt.hashSync("al6", 10);
+const hashedPassword3 = bcrypt.hashSync("davy", 10);
+
+module.exports = { hashedPassword1, hashedPassword2, hashedPassword3 };
+
+console.log(hashedPassword1);
+
+// Données et configurations
 const recipes = require("./list.json");
+const db = require("./users");
 
-// vars
 const app = express();
-const port = 3001;
-const jwtSecret =
-  "OurSuperLongRandomSecretToSignOurJWTgre5ezg4jyt5j4ui64gn56bd4sfs5qe4erg5t5yjh46yu6knsw4q";
 
-// users data
-const db = {
-  users: [
-    {
-      id: 32,
-      password: "jennifer",
-      username: "John",
-      color: "#c23616",
-      favorites: [21453, 462],
-      email: "bouclierman@herocorp.io",
+const jwtSecret =
+  process.env.JWT_SECRET ||
+  "OurSuperLongRandomSecretToSignOurJWTgre5ezg4jyt5j4ui64gn56bd4sfs5qe4erg5t5yjh46yu6knsw4q";
+const port = process.env.PORT || 3001;
+
+// Configuration Swagger
+const options = {
+  info: {
+    version: "1.0.0",
+    title: "Recipes API",
+    description:
+      "Documentation de l'API de Recettes. Pour tester l'accés aux routes protégées, en étant authentifié après avoir saisi les identifiants, récupérer (dans la console) le JWT généré. Cliquer sur le bouton 'Authorize' en haut à droite. Entrer le JWT dans le champ 'Value' sous 'BearerAuth'. Cliquer sur 'Authorize' puis sur 'Close'.",
+    license: {
+      name: "MIT",
     },
-    {
-      id: 55,
-      password: "fructis",
-      username: "Burt",
-      color: "#009432",
-      favorites: [8965, 11],
-      email: "acidman@herocorp.io",
+  },
+  security: {
+    BearerAuth: {
+      type: "http",
+      scheme: "bearer",
     },
-    {
-      id: 123,
-      password: "pingpong",
-      username: "Karin",
-      color: "#f0f",
-      favorites: [8762],
-      email: "captain.sportsextremes@herocorp.io",
+  },
+  baseDir: __dirname,
+  filesPattern: "./**/*.js",
+  swaggerUIPath: "/api/docs",
+  exposeSwaggerUI: true,
+  exposeApiDocs: false,
+  apiDocsPath: "/v3/api-docs",
+  notRequiredAsNullable: false,
+  swaggerUiOptions: {},
+  multiple: true,
+  components: {
+    securitySchemes: {
+      BearerAuth: {
+        type: "http",
+        scheme: "bearer",
+      },
     },
-  ],
+    schemas: {
+      Recipe: {
+        type: "object",
+        properties: {
+          id: { type: "integer", example: 1 },
+          title: { type: "string", example: "Spaghetti Carbonara" },
+          slug: { type: "string", example: "spaghetti-carbonara" },
+          thumbnail: {
+            type: "string",
+            example: "https://example.com/image.jpg",
+          },
+          author: { type: "string", example: "John Doe" },
+          difficulty: { type: "string", example: "Facile" },
+          description: {
+            type: "string",
+            example: "Délicieuse recette de spaghetti carbonara.",
+          },
+          ingredients: {
+            type: "array",
+            items: { $ref: "#/components/schemas/Ingredient" },
+          },
+          instructions: {
+            type: "array",
+            items: { type: "string" },
+            example: [
+              "Faire cuire les spaghetti.",
+              "Mélanger les oeufs et le bacon.",
+              "Combiner le tout.",
+            ],
+          },
+        },
+      },
+    },
+  },
 };
 
-/* Middlewares */
-// parse request body
-app.use(bodyParser.json());
+expressJSDocSwagger(app)(options);
 
-// cors
+// Middlewares
+app.use(cors());
+app.use(express.json());
+app.use(express.static("public"));
+
+// Extract & verif du JWT depuis l’en-tête Authorization
+//* sans express-jwt
+/*
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "http://localhost:8080");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Content-Type, Accept, Authorization"
-  );
-  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE");
+  const authorization = req.headers.authorization;
+  if (authorization) {
+    const token = authorization.split(" ")[1];
+    try {
+      const jwtContent = jsonwebtoken.verify(token, jwtSecret, {
+        algorithms: ["HS256"],
+        issuer: "api.recipes",
+        audience: "api.users",
+      });
+      req.user = jwtContent;
+    } catch (err) {
+      console.log("Invalid token", err);
+    }
+  }
+  next();
+});
+*/
 
-  // response to preflight request
-  if (req.method === "OPTIONS") {
-    res.sendStatus(200);
+// Vérification du token JWT
+//* avec express-jwt
+app.use(
+  expressJwt({
+    secret: jwtSecret,
+    algorithms: ["HS256"],
+    audience: "api.users",
+  }).unless({ path: ["/api/login", "/api/recipes", "/"] }) // Exclure les routes de la vérification du token JWT
+);
+
+// Vérification du token JWT
+const checkLoggedIn = (req, res, next) => {
+  if (!req.user) {
+    console.log("<< 401 UNAUTHORIZED");
+    res.status(401).json({ message: "Unauthorized" });
   } else {
     next();
   }
-});
-
-// prepare authorization middleware
-const authorizationMiddleware = jwt({
-  secret: jwtSecret,
-  algorithms: ["HS256"],
-});
-
-//L'API va écouter les requêtes GET sur http://localhost:3001/
-//et renvoyer un json indiquant que la requête est un succès
+};
 
 /* Routes */
-// Page d'accueil du serveur : GET /
+
+// Page d'accueil du serveur
 app.get("/", (req, res) => {
   console.log(">> GET /");
   res.sendFile(__dirname + "/index.html");
 });
 
-// Liste des recettes : GET /recipes
-app.get("/recipes", (req, res) => {
+/**
+ * @typedef {object} Recipe
+ * @property {number} id - The ID of the recipe
+ * @property {string} title - The title of the recipe
+ * @property {string} slug - The slug (URL-friendly name) of the recipe
+ * @property {string} thumbnail - The URL to the thumbnail image of the recipe
+ * @property {string} author - The author of the recipe
+ * @property {string} difficulty - The difficulty level of the recipe
+ * @property {string} description - A short description of the recipe
+ * @property {array<string>} ingredients - The list of ingredients for the recipe
+ * @property {array<string>} instructions - The instructions for preparing the recipe
+ */
+
+/**
+ * GET /api/recipes
+ * @summary Returns a list of recipes
+ * @tags recipes
+ * @return {array<Recipe>} 200 - Success response with an array of recipes - application/json
+ */
+app.get("/api/recipes", (req, res) => {
   console.log(">> GET /recipes");
   res.json(recipes);
 });
 
-// Login : POST /login
-app.post("/login", (req, res) => {
+/**
+ * @typedef {object} Credentials
+ * @property {string} email - The email address of the user
+ * @property {string} password - The password of the user
+ */
+
+/**
+ * @typedef {object} AuthUser
+ * @property {boolean} logged - The login status of the user
+ * @property {string} pseudo - The username of the authenticated user
+ * @property {string} token - The JWT token for the user
+ */
+
+/**
+ * POST /api/login
+ * @summary Logs in a user
+ * @tags users
+ * @param {Credentials} request.body.required - The user credentials
+ * @return {AuthUser} 200 - Success response with the user information - application/json
+ * @return {object} 401 - Unauthorized response with an error message - application/json
+ * @security BasicAuth
+ * @security BearerAuth
+ * @example request - Example usage:
+ * {
+ *   "email": "bouclierman@herocorp.io",
+ *   "password": "monSuperPasswordSécurisé"
+ * }
+ * @example response - Example response:
+ * {
+ *   "logged": true,
+ *   "pseudo": "jennifer(exemple)",
+ *   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjMyfQ.3h"
+ * }
+ * @example response - Example unauthorized response:
+ * {
+ *   "message": "Unauthorized"
+ * }
+ */
+app.post("/api/login", (req, res) => {
   console.log(">> POST /login", req.body);
   const { email, password } = req.body;
 
   // authentication
-  const user = db.users.find(
-    (user) => user.email === email && user.password === password
-  );
+  const user = db.users.find((user) => user.email === email);
+  console.log("User found:", user);
 
   // http response
-  if (user) {
+  if (user && bcrypt.compareSync(password, user.password)) {
+    console.log(
+      "Password comparison:",
+      bcrypt.compareSync(password, user.password)
+    );
+    // Génération du mot de passe haché
     const jwtContent = { userId: user.id };
     const jwtOptions = {
       algorithm: "HS256",
       expiresIn: "3h",
+      audience: "api.users",
     };
-    console.log("<< 200", user.username);
-    res.json({
+    const token = jsonwebtoken.sign(jwtContent, jwtSecret, jwtOptions);
+    console.log("Generated token:", token);
+
+    res.status(200).json({
       logged: true,
       pseudo: user.username,
-      token: jsonwebtoken.sign(jwtContent, jwtSecret, jwtOptions),
+      token: token,
     });
   } else {
     console.log("<< 401 UNAUTHORIZED");
-    res.sendStatus(401);
+    res.status(401).json({ message: "Unauthorized" });
   }
 });
 
-// Favorites recipes : GET /favorites
-app.get("/favorites", authorizationMiddleware, (req, res) => {
-  console.log(">> GET /favorites", req.user);
+/**
+ * @typedef {object} Favorites
+ * @property {array<Recipe>} favorites - The list of favorite recipes
+ */
 
+/**
+ * GET /api/favorites
+ * @summary Returns a list of favorite recipes
+ * @tags recipes
+ * @security BearerAuth
+ * @return {array<Recipe>} 200 - success response - application/json
+ */
+app.get("/api/favorites", checkLoggedIn, (req, res) => {
   const user = db.users.find((user) => user.id === req.user.userId);
-  console.log("<< 200");
   res.json({
     favorites: recipes.filter((recipe) => user.favorites.includes(recipe.id)),
   });
 });
 
-// Error middleware
+// Middleware => Gestion des erreurs si aucune route ne répond à la requête
+app.use((req, res, next) => {
+  next(new Error("Not found"));
+});
+
 app.use((err, req, res, next) => {
   if (err.name === "UnauthorizedError") {
     console.log("<< 401 UNAUTHORIZED - Invalid Token");
-    res.status(401).send("Invalid token");
+    res.status(401).json({ message: "Invalid token" });
+  } else if (err.message === "Not found") {
+    console.log("<< 404 NOT FOUND");
+    res.status(404).json({ message: "Not found" });
+  } else {
+    console.error(err);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 });
 
-/*
- * Server
- */
 app.listen(port, () => {
-  console.log(`listening on *:${port}`);
+  console.log(`Server is running on port ${port}`);
 });

@@ -1,26 +1,48 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>O'recipes API</title>
-</head>
-<body>
-  <div style="margin: 5em auto; width: 400px; line-height: 1.5">
-    <h1 style="text-align: center">Hello!</h1>
-    <p>Si tu vois ce message, c'est que ton serveur est bien lancé !</p>
-    <div>Désormais, tu dois venir utiliser l'API</div>
-    <ul style="display: inline-block; margin-top: .2em">
-      <li>Recettes : <code>GET /recipes</code></li>
-      <li>
-        Login : <code>POST /login</code><br>
-        <em>data</em> : <code>email</code> et <code>password</code>
-      </li>
-      <li>
-        Recettes préférées : <code>GET /favorites</code><br>
-        <em>header</em> : <code>Authorization: Bearer yourToken</code>
-      </li>
-    </ul>
-  </div>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Recettes / Recipes API</title>
+  </head>
+  <body>
+    <div style="margin: 5em auto; width: 330px; line-height: 1.5">
+      <h1 style="text-align: center">Recipes API 📝</h1>
+
+      <ul>
+        <li>Recettes : <code>GET /recipes</code></li>
+        <li>
+          Login : <code>POST /login</code><br />
+          <em>data</em> : <code>email</code> et <code>password</code>
+        </li>
+        <li>
+          Recettes préférées : <code>GET /favorites</code><br />
+          <em>header</em> : <code>Authorization: Bearer yourToken</code>
+        </li>
+      </ul>
+    </div>
+    <div style="margin: 3em auto; width: 330px; line-height: 1.5">
+      <h2>👉 <a href="/api/docs">Documentation de l'API</a></h2>
+      <h3>Comptes Utilisateur pour se connecter</h3>
+      <p>Disponibles en exemple dans la documentation</p>
+      <ul>
+        <li>
+          <strong>Bob</strong>
+          <code
+            >{ "email": "bouclierman@herocorp.io", "password":
+            "monSuperPasswordSécurisé" }</code
+          >
+        </li>
+        <li>
+          <strong>Alice</strong>
+          <code>{ "email": "alice@mail.io", "password": "al6" }</code>
+        </li>
+        <li>
+          <strong>Dave</strong>
+          <code>{ "email": "dave@mail.io", "password": "davy" }</code>
+        </li>
+      </ul>
+    </div>
+  </body>
 </html>
