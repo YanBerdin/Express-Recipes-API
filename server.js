@@ -27,13 +27,13 @@ const jwtSecret =
   "OurSuperLongRandomSecretToSignOurJWTgre5ezg4jyt5j4ui64gn56bd4sfs5qe4erg5t5yjh46yu6knsw4q";
 const port = process.env.PORT || 3001;
 
-// Configuration Swagger
+// Configuration Swagger https://brikev.github.io/express-jsdoc-swagger-docs/#/
 const options = {
   info: {
     version: "1.0.0",
     title: "Recipes API",
     description:
-      "Documentation de l'API de Recettes. Pour tester l'accés aux routes protégées, en étant authentifié après avoir saisi les identifiants, récupérer (dans la console) le JWT généré. Cliquer sur le bouton 'Authorize' en haut à droite. Entrer le JWT dans le champ 'Value' sous 'BearerAuth'. Cliquer sur 'Authorize' puis sur 'Close'.",
+      "Documentation de l'API de Recettes. Pour tester l'accés aux routes protégées 🔒, en étant authentifié après avoir saisi les identifiants, récupérer (dans la console) le JWT généré. Cliquer sur le bouton 'Authorize' en haut à droite. Entrer le JWT dans le champ 'Value' sous 'BearerAuth'. Cliquer sur 'Authorize' puis sur 'Close'.",
     license: {
       name: "MIT",
     },
@@ -132,7 +132,15 @@ app.use(
     secret: jwtSecret,
     algorithms: ["HS256"],
     audience: "api.users",
-  }).unless({ path: ["/api/login", "/api/recipes", "/"] }) // Exclure les routes de la vérification du token JWT
+  }).unless({
+    path: [
+      "/api/login",
+      "/api/recipes",
+      "/api/recipes/:idOrSlug",
+      { url: /^\/api\/recipes\/[^/]+$/, methods: ["GET"] },
+      "/",
+    ],
+  }) // Exclure les routes de la vérification du token JWT
 );
 
 // Vérification du token JWT
@@ -171,10 +179,44 @@ app.get("/", (req, res) => {
  * @summary Returns a list of recipes
  * @tags recipes
  * @return {array<Recipe>} 200 - Success response with an array of recipes - application/json
+ * @example response - 200 - Example success response
+ * [
+ *   {
+ *     "id": 1,
+ *     "name": "Spaghetti Carbonara",
+ *     "description": "Delicious spaghetti carbonara recipe.",
+ *     "thumbnail": "https://example.com/image.jpg",
+ *     "author": "John Doe",
+ *     "difficulty": "Facile",
+ *     "ingredients": ["Spaghetti", "Eggs", "Pancetta", "Parmesan cheese"],
+ *     "instructions": ["Cook the spaghetti.", "Fry the pancetta.", "Mix eggs and cheese.", "Combine everything."]
+ *   }
+ * ]
  */
 app.get("/api/recipes", (req, res) => {
   console.log(">> GET /recipes");
   res.json(recipes);
+});
+
+/**
+ * GET /api/recipes/{idOrSlug}
+ * @summary Returns a recipe
+ * @tags recipes
+ * @param {string} idOrSlug.path.required - slug param
+ * @return {Recipe} 200 - success response - application/json
+ */
+app.get("/api/recipes/:idOrSlug", (req, res) => {
+  console.log(">> GET /recipes/:idOrSlug", req.params.idOrSlug);
+  const recipe = recipes.find(
+    (recipe) =>
+      recipe.id === parseInt(req.params.idOrSlug) ||
+      recipe.slug === req.params.idOrSlug
+  );
+  if (!recipe)
+    return res
+      .status(404)
+      .send("The recipe with the given ID or Slug was not found.");
+  res.json(recipe);
 });
 
 /**
@@ -192,28 +234,28 @@ app.get("/api/recipes", (req, res) => {
 
 /**
  * POST /api/login
- * @summary Logs in a user
- * @tags users
- * @param {Credentials} request.body.required - The user credentials
- * @return {AuthUser} 200 - Success response with the user information - application/json
- * @return {object} 401 - Unauthorized response with an error message - application/json
- * @security BasicAuth
- * @security BearerAuth
+ * @summary Authenticates a user
+ * @tags auth
+ * @param {Credentials} request.body.required - user credentials
+ * @return {AuthUser} 200 - Success response with user informations - application/json
  * @example request - Example usage:
  * {
  *   "email": "bouclierman@herocorp.io",
  *   "password": "monSuperPasswordSécurisé"
  * }
- * @example response - Example response:
+ * @example response - 200 - Example success response
  * {
  *   "logged": true,
  *   "pseudo": "jennifer(exemple)",
  *   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjMyfQ.3h"
  * }
- * @example response - Example unauthorized response:
+ * @return {object} 401 - unauthorized response - application/json
+ * @example response - 401 - Example unauthorized response
  * {
  *   "message": "Unauthorized"
  * }
+ * @security BasicAuth
+ * @security BearerAuth
  */
 app.post("/api/login", (req, res) => {
   console.log(">> POST /login", req.body);
