@@ -133,14 +133,15 @@ app.use(
     algorithms: ["HS256"],
     audience: "api.users",
   }).unless({
+    // unless =>  Exclure les routes de la vérification du JWT
     path: [
-      "/api/login",
-      "/api/recipes",
-      "/api/recipes/:idOrSlug",
+      { url: "/", methods: ["GET"] },
+      { url: "/api/recipes", methods: ["GET"] },
+      { url: "/api/recipes/:idOrSlug", methods: ["GET"] },
       { url: /^\/api\/recipes\/[^/]+$/, methods: ["GET"] },
-      "/",
+      { url: "/api/login", methods: ["POST"] },
     ],
-  }) // Exclure les routes de la vérification du token JWT
+  })
 );
 
 // Vérification du token JWT
@@ -279,7 +280,7 @@ app.post("/api/login", (req, res) => {
       audience: "api.users",
     };
     const token = jsonwebtoken.sign(jwtContent, jwtSecret, jwtOptions);
-    console.log("Generated token:", token);
+    console.log("Generated token:", token); //TODO: remove
 
     res.status(200).json({
       logged: true,
@@ -287,7 +288,7 @@ app.post("/api/login", (req, res) => {
       token: token,
     });
   } else {
-    console.log("<< 401 UNAUTHORIZED");
+    console.log("<< 401 UNAUTHORIZED"); //TODO: remove
     res.status(401).json({ message: "Unauthorized" });
   }
 });
@@ -318,17 +319,17 @@ app.use((req, res, next) => {
 
 app.use((err, req, res, next) => {
   if (err.name === "UnauthorizedError") {
-    console.log("<< 401 UNAUTHORIZED - Invalid Token");
+    console.log("<< 401 UNAUTHORIZED - Invalid Token"); //TODO: remove
     res.status(401).json({ message: "Invalid token" });
   } else if (err.message === "Not found") {
-    console.log("<< 404 NOT FOUND");
+    console.log("<< 404 NOT FOUND"); //TODO: remove
     res.status(404).json({ message: "Not found" });
   } else {
-    console.error(err);
+    console.error(err); //TODO: remove
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
 
 app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+  console.log(`Server is running on port ${port}`); //TODO: remove
 });
