@@ -2,6 +2,8 @@
 
 Recipes API est une API RESTful permettant de gérer des recettes culinaires. Elle offre des endpoints pour consulter des recettes, gérer les favoris, et authentifier les utilisateurs. L'API est sécurisée avec des JWT (JSON Web Tokens) et documentée avec Swagger.
 
+🛠️ Technologies Utilisées : JS | React | Axios | Bcrypt | Cors | PropTypes | Swagger
+
 ---
 
 ## **Table des matières**
@@ -65,7 +67,7 @@ L'API prend en charge :
 
    ```env
    PORT=3001
-   JWT_SECRET=OurSuperLongRandomSecretToSignOurJWTgre5ezg4jyt5j4ui64gn56bd4sfs5qe4erg5t5yjh46yu6knsw4q
+   JWT_SECRET=OurSuperLongRandomSecretToSignOurJWT
    ```
 
 ---
@@ -230,15 +232,16 @@ src/
 
 ## **Auteur**
 
-👤 **Votre Nom**
+👤 **Yan Berdin**
 
-- GitHub : [@username](https://github.com/username)  
-- LinkedIn : [Votre Profil LinkedIn](https://linkedin.com/in/username)  
+- Website: [@yanberdin.com](<https://www.yanberdin.com>)
+- Github: [@Yan{GitHub}](https://github.com/YanBerdin)
+- LinkedIn: [@Yan{LinkedIn}](https://www.linkedin.com/in/yan-berdin)
 
 ---
 
 ## **Support**
 
-⭐ Si ce projet vous a aidé ou inspiré, laissez une étoile sur GitHub !  
+Give a ⭐️ if this project helped you!
 
 ---
