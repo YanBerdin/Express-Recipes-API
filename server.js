@@ -14,7 +14,7 @@ const hashedPassword3 = bcrypt.hashSync("davy", 10);
 
 module.exports = { hashedPassword1, hashedPassword2, hashedPassword3 };
 
-console.log(hashedPassword1);
+// console.log(hashedPassword1); //! remove
 
 // Données et configurations
 const recipes = require("./list.json");
